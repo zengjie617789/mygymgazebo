@@ -27,19 +27,19 @@ repositories:
   ecl_core:
     type: git
     url: https://github.com/stonier/ecl_core
-    version: devel
+    version: release/0.61-indigo-kinetic
   ecl_lite:
     type: git
     url: https://github.com/stonier/ecl_lite
-    version: devel
+    version: release/0.61-indigo-kinetic
   ecl_navigation:
     type: git
     url: https://github.com/stonier/ecl_navigation
-    version: devel
+    version: release/0.60-indigo-kinetic
   ecl_tools:
     type: git
     url: https://github.com/stonier/ecl_tools
-    version: devel
+    version: release/0.61-indigo-kinetic
   driver_base:
     type: git
     url: https://github.com/ros-drivers/driver_common.git
@@ -156,3 +156,27 @@ repositories:
     type: git
     url: https://github.com/yujinrobot/yujin_ocs
     version: devel
+
+  geometry:
+   type: git
+   url: https://github.com/ros/geometry
+   version: indigo-devel
+  geometry2:
+   type: git
+   url: https://github.com/ros/geometry2
+   version: indigo-devel
+  vision_opencv:
+   type: git
+   url: https://github.com/ros-perception/vision_opencv.git
+   version: kinetic
+
+
+  ar_track_alvar:
+    type: git
+    url: https://github.com/ros-perception/ar_track_alvar.git
+    version: kinetic-devel
+  mav_comm:
+    type: git
+    url: https://github.com/ethz-asl/mav_comm.git
+    version: master
+ 

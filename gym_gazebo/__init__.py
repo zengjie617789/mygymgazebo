@@ -8,6 +8,13 @@ logger = logging.getLogger(__name__)
 
 # Turtlebot envs
 register(
+    id='GazeboMylabTurtlebotLidar-v0',
+    entry_point='gym_gazebo.envs.turtlebot:GazeboMylabTurtlebotLidarEnv',
+    max_episode_steps=1000
+    # More arguments here
+)
+
+register(
     id='GazeboMazeTurtlebotLidar-v0',
     entry_point='gym_gazebo.envs.turtlebot:GazeboMazeTurtlebotLidarEnv',
     # More arguments here
