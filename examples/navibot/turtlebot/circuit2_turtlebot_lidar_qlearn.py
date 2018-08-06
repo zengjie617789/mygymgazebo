@@ -1,9 +1,10 @@
-
+#!/usr/bin/env python
 import gym
 import gym_gazebo
 import time
 import numpy
 import random
+import time
 
 import qlearn
 import liveplot
@@ -20,7 +21,7 @@ def render():
 
 if __name__ == '__main__':
 
-    env = gym.make('GazeboMylabTurtlebotLidar-v0')
+    env = gym.make('GazeboCircuit2TurtlebotLidar-v0')
 
     outdir = '/tmp/gazebo_gym_experiments'
     env = gym.wrappers.Monitor(env, outdir, force=True)
