@@ -7,3 +7,5 @@ from gym_gazebo.envs.turtlebot.gazebo_circuit2c_turtlebot_camera_nn import Gazeb
 from gym_gazebo.envs.turtlebot.gazebo_round_turtlebot_lidar import GazeboRoundTurtlebotLidarEnv
 
 from gym_gazebo.envs.turtlebot.gazebo_mylab_turtlebot_lidar_qlearn import GazeboMylabTurtlebotLidarEnv
+from gym_gazebo.envs.turtlebot.gazebo_mylab_turtlebot_lidar_dqn import GazeboMylabTurtlebotLidarNnEnv 
+from gym_gazebo.envs.turtlebot.gazebo_mylab_navibot_lidar_dqn import GazeboNavibotLidarNnEnv

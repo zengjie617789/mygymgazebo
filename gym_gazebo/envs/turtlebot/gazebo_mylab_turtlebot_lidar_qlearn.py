@@ -3,18 +3,23 @@ import rospy
 import roslaunch
 import time
 import numpy as np
-
+import math
 from gym import utils, spaces
 from gym_gazebo.envs import gazebo_env
 from geometry_msgs.msg import Twist
 from std_srvs.srv import Empty
-
+import tf
+from tf2_msgs.msg import TFMessage
 from sensor_msgs.msg import LaserScan
 
 from gym.utils import seeding
+from gazebo_msgs.srv import GetModelState
+from gazebo_msgs.msg import ModelStates
+import cmath
+
 
 class GazeboMylabTurtlebotLidarEnv(gazebo_env.GazeboEnv):
-
+    store = [0]
     def __init__(self):
         # Launch the simulation with the given launchfile name
         gazebo_env.GazeboEnv.__init__(self, "GazeboMylabTurtlebotLidar_v0.launch")
@@ -24,9 +29,12 @@ class GazeboMylabTurtlebotLidarEnv(gazebo_env.GazeboEnv):
         self.pause = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
         self.reset_proxy = rospy.ServiceProxy('/gazebo/reset_simulation', Empty)
 
+        self.getmodelstate=rospy.ServiceProxy('/gazebo/get_model_state',GetModelState)
+
         self.action_space = spaces.Discrete(3) #F,L,R
         self.reward_range = (-np.inf, np.inf)
-
+        self.distance=0
+        self.angle=0
         self._seed()
 
     def discretize_observation(self,data,new_ranges):
@@ -51,7 +59,6 @@ class GazeboMylabTurtlebotLidarEnv(gazebo_env.GazeboEnv):
         return [seed]
 
     def _step(self, action):
-
         rospy.wait_for_service('/gazebo/unpause_physics')
         try:
             self.unpause()
@@ -80,7 +87,12 @@ class GazeboMylabTurtlebotLidarEnv(gazebo_env.GazeboEnv):
                 data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
             except:
                 pass
-
+        robot_tf=None
+        while robot_tf is None:
+            try:
+                robot_tf = rospy.wait_for_message("/tf", TFMessage, timeout=5)
+            except:
+                pass
         rospy.wait_for_service('/gazebo/pause_physics')
         try:
             #resp_pause = pause.call()
@@ -90,13 +102,70 @@ class GazeboMylabTurtlebotLidarEnv(gazebo_env.GazeboEnv):
 
         state,done = self.discretize_observation(data,5)
 
+        targetPosition=ModelStates()
+        mobilePosition=ModelStates()
+        rospy.wait_for_service("/gazebo/get_model_state")
+        try:
+            targetPosition=self.getmodelstate('Target', 'world')
+            mobilePosition=self.getmodelstate('mobile_base', 'world')
+        except(rospy.ServiceException)as e:
+            print('get the target position failed !')
+
+
+
+        # distance2 = math.hypot(mobilePosition.pose.position.x - targetPosition.pose.position.x,
+        #                        mobilePosition.pose.position.y - targetPosition.pose.position.y)
+        x= targetPosition.pose.position.x-mobilePosition.pose.position.x
+        y= targetPosition.pose.position.y-mobilePosition.pose.position.y
+        distance,angle= cmath.polar(complex(x,y))
+        if x < 0 and y < 0:
+            angle = -np.pi - np.arcsin(y / distance)
+        elif x < 0 and y > 0:
+            angle = np.pi - np.arcsin(y / distance)
+        else:
+            angle = np.arcsin(y / distance)
+
+        quaternion=(robot_tf.transforms[0].transform.rotation.x,
+                    robot_tf.transforms[0].transform.rotation.y,
+                    robot_tf.transforms[0].transform.rotation.z,
+                    robot_tf.transforms[0].transform.rotation.w)
+        euler=np.array(tf.transformations.euler_from_quaternion(quaternion))
+
+        if distance<=0.3:
+            target=True
+            # print("targetPosition.pose.position.y"+str(targetPosition.pose.position.y))
+            # print("mobilePosition.pose.position.y"+str(mobilePosition.pose.position.y))
+        else:
+            target=False
+
+        #target=False
         if not done:
-            if action == 0:
-                reward = 5
+            if target:
+                reward = 200
+                done = True
             else:
-                reward = 1
+                distance1=GazeboMylabTurtlebotLidarEnv.store[0]
+                #reward = round(10*(distance1-distance2),2)
+                reward=-distance
+                #GazeboMylabTurtlebotLidarEnv.store[0]=distance2
+                # print('distance: '+str(distance1)+'  distance2: '+str(distance2)+' store: '+str(GazeboMylabTurtlebotLidarEnv.store[0]))
         else:
             reward = -200
+
+        # if abs(angle-euler[2])>math.pi:
+        #     anglereward=-abs(-angle-euler[2])
+        # else:
+        #     anglereward=-abs(angle-euler[2])
+
+        if angle-euler[2]< np.pi/2 or angle-euler[2]>np.pi*3/2:
+            anglereward=-(max(angle,euler[2])-min(angle,euler[2]))
+        else:
+            anglereward=-np.pi
+        #print(anglereward,reward)
+        reward=reward+anglereward
+        self.distance=np.round(distance,1)
+        self.angle=np.round(angle,1)
+        state.extend([self.distance,self.angle])
 
         return state, reward, done, {}
 
@@ -133,6 +202,8 @@ class GazeboMylabTurtlebotLidarEnv(gazebo_env.GazeboEnv):
         except (rospy.ServiceException) as e:
             print ("/gazebo/pause_physics service call failed")
 
-        state = self.discretize_observation(data,5)
-
+        state , done= self.discretize_observation(data,5)
+        #state=np.hstack([state,self.distance,self.angle])
+        state.extend([self.distance,self.angle])
+        print(state)
         return state
