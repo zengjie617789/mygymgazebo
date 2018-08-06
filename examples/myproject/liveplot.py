@@ -30,9 +30,10 @@ class LivePlot(object):
             data = gym.wrappers.Monitor.get_episode_rewards(env)
         else:
             data = gym.wrappers.Monitor.get_episode_lengths(env)
-
+        plt.figure(1)
         plt.plot(data, color=self.line_color)
 
         # pause so matplotlib will display
         # may want to figure out matplotlib animation or use a different library in the future
         plt.pause(0.000001)
+        #plt.show()
