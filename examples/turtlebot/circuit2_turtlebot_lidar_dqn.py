@@ -6,13 +6,13 @@ https://github.com/vmayoral/basic_reinforcement_learning
 https://gist.github.com/wingedsheep/4199594b02138dd427c22a540d6d6b8d
 '''
 import gym
-import gym_gazebo
 import time
 from distutils.dir_util import copy_tree
 import os
 import json
 import liveplot
-import deepq
+from examples.myturtlebot import deepq
+
 
 def detect_monitor_files(training_dir):
     return [os.path.join(training_dir, f) for f in os.listdir(training_dir) if f.startswith('openaigym')]
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         learningRate = 0.00025
         discountFactor = 0.99
         memorySize = 1000000
-        network_inputs = 100
+        network_inputs = 10
         network_outputs = 21
         network_structure = [300,300]
         current_epoch = 0

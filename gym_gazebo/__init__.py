@@ -1,5 +1,5 @@
 import logging
-from gym.envs.registration import register
+from gym.envs.registration import registry, register, make, spec
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +14,14 @@ register(
     # More arguments here
 )
 
+
 register(
-    id='GazeboMazeTurtlebotLidar-v0',
-    entry_point='gym_gazebo.envs.turtlebot:GazeboMazeTurtlebotLidarEnv',
+    id='GazeboNavibotLidarNn-v0',
+    entry_point='gym_gazebo.envs.turtlebot:GazeboNavibotLidarNnEnv',
+    max_episode_steps=1000
     # More arguments here
 )
+
 register(
     id='GazeboCircuitTurtlebotLidar-v0',
     entry_point='gym_gazebo.envs.turtlebot:GazeboCircuitTurtlebotLidarEnv',

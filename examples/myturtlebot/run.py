@@ -33,14 +33,14 @@ if __name__ == '__main__':
     path = '/home/control511/KerasModel/turtle_c2_dqn_ep'
     plotter = liveplot.LivePlot(outdir)
 
-    continue_execution = False
-    # continue_execution=True
+    # continue_execution = False
+    continue_execution=True
 
     epochs = 10000
     steps = 500
     updateTargetNetwork = 10000
     if continue_execution:
-        explorationRate = 0.01
+        explorationRate = 1
     else:
         explorationRate = 1
     minibatch_size = 64

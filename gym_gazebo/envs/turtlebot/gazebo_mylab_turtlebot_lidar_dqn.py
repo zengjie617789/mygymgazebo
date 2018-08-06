@@ -37,9 +37,10 @@ class GazeboMylabTurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
 
         self._seed()
 
-        self.goallist=np.array([[0,2,0],
-                               [2,2,0],
-                               [-2,1,0]])
+        self.goallist=np.array([[0,4,0],
+                               [4,0,0],
+                               [-4,4,0],
+                                [4,4,0]])
         self.spawnGoal()
 
     def getAngelDistance(self,x,y):
@@ -48,7 +49,7 @@ class GazeboMylabTurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
         return  theta,distance
 
     def setRodomModelState(self,name):
-        idx=np.random.randint(len(self.goallist)-1)
+        idx=np.random.randint(len(self.goallist))
         goalPos=self.goallist[idx]
 
         state=ModelState()
