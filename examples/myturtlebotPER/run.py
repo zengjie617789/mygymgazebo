@@ -9,7 +9,7 @@ import gym
 import time
 import os
 import liveplot
-from examples.myturtlebotPER import deepq,sample
+from examples.myturtlebotPER import deepq,sample,replay_buffer
 import matplotlib.pyplot as plt
 import rospy
 import numpy as np
@@ -40,10 +40,10 @@ if __name__ == '__main__':
     steps = 500
     updateTargetNetwork = 10000
     if continue_execution:
-        explorationRate = 0.01
+        explorationRate = 1
     else:
         explorationRate = 1
-    minibatch_size = 64
+    minibatch_size = 32  #64 or 32 ?
     learnStart = 64
     learningRate = 0.00025
     discountFactor = 0.99
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     deepQ= deepq.AgentTF(network_inputs, network_outputs, phi_length, network_structure, minibatch_size, 0.0001, discountFactor, learningRate, memorySize, updateTargetNetwork)
     dataSet= sample.DataSet(network_inputs, memorySize, phi_length)
     memory=deepq.Memory(memorySize,state_size=network_inputs,phi_length=phi_length,minibathch=minibatch_size)
+    # replay_buffer=replay_buffer.PrioritizedReplayBuffer(memorySize,1)
     if continue_execution:
     #     #Load weights, monitor info and parameter info.
     #     #ADD TRY CATCH fro this else
@@ -85,6 +86,7 @@ if __name__ == '__main__':
             newObservation,reward,done,info=env.step(action)
             deepQ.addSample(observation,action,reward,newObservation,done)
             # dataSet.addSample(observation,action,reward,newObservation,done)
+            # replay_buffer.add(observation,action,reward,newObservation,done)
 
 
 
@@ -102,8 +104,8 @@ if __name__ == '__main__':
                 #
 
                 # action=deepQ.choose_action(observation,explorationRate)
+                phi=deepQ.memory.phi(observation)
                 # phi=memory.phi(observation)
-                phi=memory.phi(observation)
                 # print(np.shape(phi))
                 action=deepQ.getAction(phi,explorationRate)
                 # action=deepQ.getAction(phi,explorationRate)
@@ -111,10 +113,11 @@ if __name__ == '__main__':
                 cumulated_reward += reward
 
                 # deepQ.store_transition(observation,action,reward,newObservation,done)
-                # deepQ.addSample(observation,action,reward,newObservation,done)
-                deepQ.addSample(observation, action, reward, newObservation, done)
+                deepQ.addSample(observation,action,reward,newObservation,done)
+                # deepQ.addSample(observation, action, reward, newObservation, done)
+                # replay_buffer.add(observation, action, reward, newObservation, done)
 
-                if stepCounter >= learnStart:
+                if stepCounter > learnStart*4:
                     # batchStates, batchActions, batchRewards, batchNextStates, batchTerminals = \
                     #     dataSet.randomBatch(minibatch_size)
 

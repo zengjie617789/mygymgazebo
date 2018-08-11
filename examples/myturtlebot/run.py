@@ -29,7 +29,7 @@ if __name__ == '__main__':
     #REMEMBER!: turtlebot_nn_setup.bash must be executed.
     env = gym.make('GazeboMylabTurtlebotLidarNn-v0')
     # outdir = '/home/control511/KerasModel/gazebo_gym_experiments/'
-    outdir ='/home/control511/KerasModel/DQNperModel/'
+    outdir ='/home/control511/KerasModel/DQNModel/'
     path = '/home/control511/KerasModel/turtle_c2_dqn_ep'
     plotter = liveplot.LivePlot(outdir)
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # network_structure = [300,300]
     current_epoch = 0
     e_greedy=0.9
-    phi_length=4
+    phi_length=1
     deepQ= deepq.AgentTF(network_inputs, network_outputs, phi_length, network_structure, minibatch_size, 0.0001, discountFactor, learningRate, memorySize, updateTargetNetwork)
     dataSet= sample.DataSet(network_inputs, memorySize, phi_length)
     memory=deepq.Memory(memorySize,state_size=network_inputs,phi_length=phi_length,minibathch=minibatch_size)
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                     plt.figure(1)
                     plt.plot(np.arange(len(cost_hist)),cost_hist)
                     plt.ylabel('Cost')
-                    plt.xlabel('ireation steps')
+                    plt.xlabel('iteration steps')
                     plt.savefig('loss.png')
                     plt.figure(2)
                     plt.plot(np.arange(len(reward_hist)),reward_hist)

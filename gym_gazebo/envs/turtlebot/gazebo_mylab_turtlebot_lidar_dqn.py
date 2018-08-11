@@ -37,10 +37,10 @@ class GazeboMylabTurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
 
         self._seed()
 
-        self.goallist=np.array([[0,4,0],
-                               [4,0,0],
-                               [-4,4,0],
-                                [4,4,0]])
+        self.goallist=np.array([[0,2,0],
+                               [3,0,0],
+                               [-2,3,0],
+                                [3,2,0]])
         self.spawnGoal()
 
     def getAngelDistance(self,x,y):
