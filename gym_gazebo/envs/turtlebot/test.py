@@ -25,19 +25,25 @@ import numpy as np
 #     # print(base_link_dumper)
 # except:
 #     raise rospy.exceptions.ROSException
-a=np.array([1,2])
-b=np.array([3,4])
-c=0
-d=3
-
-data=np.hstack((a,b,c,d))
-data2=np.hstack((a,[c,d],b,1))
-print(data2)
-print(data2[:2])
-print(data2[2])
-print(data2[3])
-print(data2[4:-1])
-if 1 == True:
-    print("true")
-else:
-    print("false")
+# a=np.array([1,2])
+# b=np.array([3,4])
+# c=0
+# d=3
+#
+# data=np.hstack((a,b,c,d))
+# data2=np.hstack((a,[c,d],b,1))
+# print(data2)
+# print(data2[:2])
+# print(data2[2])
+# print(data2[3])
+# print(data2[4:-1])
+# if 1 == True:
+#     print("true")
+# else:
+#     print("false")
+a=0
+for i in range(3):
+   a+=1
+   if a==2:
+       continue
+   print(a)

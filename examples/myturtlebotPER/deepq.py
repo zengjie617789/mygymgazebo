@@ -27,7 +27,7 @@ class SumTree(object):
         self.n=batch_size
         self.state_size=state_size
         self.States, self.actions, self.rewards, self.nextStates, self.terminals = np.empty((self.capacity, self.state_size)), \
-        np.empty((self.capacity,)), np.empty(self.capacity, ), np.empty((self.capacity, self.state_size)), np.empty((self.capacity,))
+        np.empty((self.capacity,)), np.empty((self.capacity, )), np.empty((self.capacity, self.state_size)), np.empty((self.capacity,))
     def _propagate(self,idx,change):
         parent=(idx-1)//2
         self.tree[parent]+=change
@@ -105,10 +105,8 @@ class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
         self.tree = SumTree(capacity,phi_length,state_size,minibathch)
         self.state_size=state_size
         self.phi_length=phi_length
-        self.n=minibathch
-        self.States, self.actions, self.rewards, self.nextStates, self.terminals = np.empty((self.n, self.state_size*self.phi_length)), \
-                                                                                   np.empty((self.n,)), np.empty(
-            self.n, ), np.empty((self.n, self.state_size*self.phi_length)), np.empty((self.n,))
+        # self.n=minibathch
+
         self.number=0
 
     def store(self, state,action,reward,nextstate,terminal):
@@ -120,7 +118,7 @@ class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
     def sample(self,n,phi_length):
         # b_idx, b_memory, ISWeights = np.empty((n,), dtype=np.int32), np.empty((n, self.tree.data[0].size)), np.empty((n, 1))
         b_idx,  ISWeights = np.empty((n,), dtype=np.int32),np.empty((n,))
-
+        States, actions, rewards, nextStates, terminals = np.empty((n, self.state_size*self.phi_length)), np.empty((n,)), np.empty((n, )), np.empty((n, self.state_size*self.phi_length)), np.empty((n,))
         pri_seg = self.tree.total_p / n       # priority segment
         self.beta = np.min([1., self.beta + self.beta_increment_per_sampling])  # max = 1
 
@@ -130,20 +128,23 @@ class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
             a, b = pri_seg * i, pri_seg * (i + 1)
             v = np.random.uniform(a, b)
             idx, p,data_idx = self.tree.get_leaf(v)
+            if data_idx<4:
+                States[i]=self.tree.States[0:4].reshape(1,self.state_size*self.phi_length)
+                nextStates[i]=self.tree.nextStates[0:4].reshape(1,self.state_size*self.phi_length)
+            else:
+                temp = self.tree.States[data_idx - self.phi_length:data_idx]
+                States[i] = temp.reshape(1, self.state_size * self.phi_length)
+                nextStates[i]=self.tree.nextStates[data_idx-self.phi_length:data_idx].reshape(1,self.state_size*phi_length)
             prob = p / self.tree.total_p
             ISWeights[i] = np.power(prob/min_prob, -self.beta)
-
-            self.States[i]=self.tree.States[data_idx:data_idx+4].reshape(1,self.state_size*self.phi_length)
-
-            self.actions[i]=self.tree.actions[data_idx]
-            self.rewards[i]=self.tree.rewards[data_idx]
-            self.nextStates[i]=self.tree.nextStates[data_idx:data_idx+4].reshape(1,self.state_size*phi_length)
-            self.terminals[i]=self.tree.terminals[data_idx]
+            actions[i]=self.tree.actions[data_idx]
+            rewards[i]=self.tree.rewards[data_idx]
+            terminals[i]=self.tree.terminals[data_idx]
             b_idx[i],  = idx,
             # np.array([[self.data[data_idx - self.phi_length + 1]], [self.data[data_idx - self.phi_length + 2]]
             # [self.data[data_idx - self.phi_length + 3]], [self.data[data_idx]]])
 
-        return b_idx, ISWeights,self.States,self.actions,self.rewards,self.nextStates,self.terminals
+        return b_idx, ISWeights,States,actions,rewards,nextStates,terminals
 
     def batch_update(self, tree_idx, abs_errors):
         abs_errors += self.epsilon  # convert to abs and avoid 0
@@ -166,9 +167,14 @@ class Memory(object):  # stored as ( s, a, r, s_ ) in SumTree
         state[self.phi_length-1]=observation
         return state.reshape(1,self.state_size*self.phi_length)
 
+    def lastPhi(self):
+        indexs=np.arange(self.number-self.phi_length,self.number)
+        return self.tree.States.take(indexs,axis=0)
+
+
 
 class AgentTF:
-    def __init__(self, state_size, action_size,phi_length, hidden_layers, batch_size, tau, gamma,learning_rate,memory_size,updatenetworks):
+    def __init__(self, state_size, action_size,phi_length, hidden_layers, batch_size, tau, gamma,learning_rate,memory_size):
 
         self.state_size=state_size
         # self.phi_length=phi_length
@@ -179,7 +185,7 @@ class AgentTF:
         self.gamma=gamma
         self.lr=learning_rate
         self.memory_size=memory_size
-        self.update_networks=updatenetworks
+        # self.update_networks=updatenetworks
         self.phi_length=phi_length
         # tensorflow
         tf.reset_default_graph()

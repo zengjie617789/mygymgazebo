@@ -191,11 +191,12 @@ class GazeboMylabTurtlebotLidarNnEnv(gazebo_env.GazeboEnv):
 
         if abs(angle)>0.5 :
             flippedreward=-1
-            # ifflipped=True
+            ifflipped=True
+            # self.setRodomModelState('mobile_base')
         else:
             flippedreward=0
 
-        done=ifcollision or ifflipped
+        done=ifcollision
 
 
         #print("reward is :"+str(reward))
